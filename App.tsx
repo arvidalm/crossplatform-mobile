@@ -7,6 +7,7 @@ import UserList from './src/screens/UserList/UserList';
 import { UserForm } from './src/screens/UserForm/UserForm';
 import { ToastProvider } from 'react-native-toast-notifications'
 import { UserInfo } from './src/screens/UserInfo/UserInfo';
+import React from "react";
 
 const UserListStack = createNativeStackNavigator()
 
@@ -22,7 +23,7 @@ const UserListStackScreen = () => {
 const Tab = createBottomTabNavigator();
 
 const NavigationWrapper = () => {
-  const loggedInAs = useSelector((state: any) => state.auth.loggedInAs) 
+  const loggedInAs = useSelector((state: any) => state.auth.loggedInAs)
 
   return (
     <NavigationContainer>

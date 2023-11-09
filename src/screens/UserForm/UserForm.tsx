@@ -3,9 +3,10 @@ import { Text, View, StyleSheet, TouchableWithoutFeedback, Keyboard } from "reac
 import { Input, Button } from '@rneui/themed';
 import { useCreateUserMutation } from "../../store/api/usersApi";
 import { useToast } from "react-native-toast-notifications";
+import React from 'react';
 
 export const UserForm = (props) => {
-	const { navigation } = props	
+	const { navigation } = props
 	const lastNameRef = useRef(null)
 
 	const [firstName, setFirstName] = useState('')
@@ -19,13 +20,13 @@ export const UserForm = (props) => {
 
 		if (firstName === "" || lastName === "") {
 			// show toast, must fill all inputs
-			console.log('Invalid form!')	
+			console.log('Invalid form!')
 			toast.show("Please fill out all inputs", {
 				type: "warning",
 				placement: "top",
 				duration: 4000,
 				animationType: "slide-in",
-			});	
+			});
 			return
 		}
 
@@ -35,7 +36,7 @@ export const UserForm = (props) => {
 				lastName: lastName,
 			}
 		}).then(() => {
-			navigation.navigate('UserList')	
+			navigation.navigate('UserList')
 			toast.show(`Användaren ${firstName} ${lastName} har skapats!`, {
 				type: "success",
 				placement: "top",
@@ -57,7 +58,7 @@ export const UserForm = (props) => {
 					<Input
 						returnKeyType="next"
 						onSubmitEditing={() => lastNameRef.current.focus()}
-						blurOnSubmit={false}	
+						blurOnSubmit={false}
 						value={firstName}
 						disabled={isLoading}
 						onChangeText={(text) => setFirstName(text)}
@@ -77,10 +78,10 @@ export const UserForm = (props) => {
 						disabled={isLoading}
 						loading={isLoading}
 						onPress={() => handleSubmit()}>
-					</Button>	
+					</Button>
 				</View>
 			</View>
-		</TouchableWithoutFeedback>	
+		</TouchableWithoutFeedback>
 	)
 }
 

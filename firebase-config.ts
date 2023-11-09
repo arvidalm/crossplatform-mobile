@@ -7,13 +7,14 @@ import { getFirestore } from 'firebase/firestore'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCXUltytRfDzWJHYFJL75Dg_WQTQS9cNiI",
-  authDomain: "iths-crossplatform-90b8d.firebaseapp.com",
-  projectId: "iths-crossplatform-90b8d",
-  storageBucket: "iths-crossplatform-90b8d.appspot.com",
-  messagingSenderId: "503967350746",
-  appId: "1:503967350746:web:f5c778bfd594533d590ae3"
-};
+    apiKey: "AIzaSyBEpON-_D3ZMZQig7EM3H33gVaMnNlFzSI",
+    authDomain: "testdatabase-4e6f9.firebaseapp.com",
+    projectId: "testdatabase-4e6f9",
+    storageBucket: "testdatabase-4e6f9.appspot.com",
+    messagingSenderId: "153333233280",
+    appId: "1:153333233280:web:e9d8ea5dcc44fdb7025865",
+    measurementId: "G-7CF819JPQ7"
+  };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
