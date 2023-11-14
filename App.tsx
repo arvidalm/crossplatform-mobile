@@ -1,16 +1,16 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Provider, useSelector } from 'react-redux';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { ToastProvider } from 'react-native-toast-notifications';
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React from "react";
+import { ToastProvider } from "react-native-toast-notifications";
+import { Provider, useSelector } from "react-redux";
 
-// Import the Redux store and components
-import { store } from './src/store/store';
-import UserList from './src/screens/UserList/UserList';
-import { UserForm } from './src/screens/UserForm/UserForm';
-import { UserInfo } from './src/screens/UserInfo/UserInfo';
-import UserPost from './src/screens/UserPost/UserPost'; // Make sure this import path matches your file structure
+import PostForm from "./src/screens/PostForm/PostForm";
+import PostList from "./src/screens/PostList/PostList";
+import { UserForm } from "./src/screens/UserForm/UserForm";
+import { UserInfo } from "./src/screens/UserInfo/UserInfo";
+import UserList from "./src/screens/UserList/UserList";
+import { store } from "./src/store/store";
 
 const UserListStack = createNativeStackNavigator();
 
@@ -19,7 +19,7 @@ const UserListStackScreen = () => {
     <UserListStack.Navigator>
       <UserListStack.Screen name="UserList" component={UserList} />
       <UserListStack.Screen name="UserInfo" component={UserInfo} />
-      {/* If you have a dedicated screen for creating posts, include it here as a stack screen */}
+      <UserListStack.Screen name="UserForm" component={UserForm} />
     </UserListStack.Navigator>
   );
 };
@@ -31,15 +31,24 @@ const NavigationWrapper = () => {
 
   return (
     <NavigationContainer>
-      <Tab.Navigator screenOptions={{ headerShown: false }}>
-        <Tab.Screen name="UserListStack" component={UserListStackScreen} />
-        <Tab.Screen name="UserForm" component={UserForm} options={{ headerShown: true }} />
-        {/* Conditionally render the UserInfo and UserPost tabs only when a user is logged in */}
+      <Tab.Navigator>
+        <Tab.Screen
+          name="User List"
+          component={UserListStackScreen}
+          options={{ headerShown: false }}
+        />
+        <Tab.Screen name="Create User" component={UserForm} />
         {loggedInAs && (
           <>
-            <Tab.Screen name="UserInfo" component={UserInfo} options={{ title: `${loggedInAs.firstName} ${loggedInAs.lastName}` }} />
-            {/* Add the UserPost screen to the Tab navigator */}
-            <Tab.Screen name="UserPost" component={UserPost} options={{ title: 'Posts' }} />
+            <Tab.Screen name="Create Post" component={PostForm} />
+            <Tab.Screen name="Posts" component={PostList} />
+            <Tab.Screen
+              name="UserInfo"
+              component={UserInfo}
+              options={{
+                title: `${loggedInAs.firstName} ${loggedInAs.lastName}`,
+              }}
+            />
           </>
         )}
       </Tab.Navigator>

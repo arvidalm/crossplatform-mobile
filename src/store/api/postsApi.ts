@@ -1,51 +1,53 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { db } from '../../../firebase-config';
+/* eslint-disable no-case-declarations */
+import { createApi } from "@reduxjs/toolkit/query/react";
 import { addDoc, collection, getDocs } from "firebase/firestore";
 
-const firebasePostsBaseQuery = async ({ url, method, body }) => {
-    switch (method) {
-      case 'GET':
-        const querySnapshot = await getDocs(collection(db, url));
-        let posts = [];
-        querySnapshot.forEach((doc) => {
-          posts.push({ id: doc.id, ...doc.data() });
-        });
-        return { data: posts };
+import { db } from "../../../firebase-config";
 
-      case 'POST':
-        const docRef = await addDoc(collection(db, url), body);
-        return { data: { id: docRef.id, ...body } };
+const firebaseBaseQuery = async ({ baseUrl, url, method, body = {} }) => {
+  switch (method) {
+    case "GET":
+      const snapshot = await getDocs(collection(db, url));
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      return { data };
 
-      // Handle other methods like UPDATE, DELETE as needed
+    case "POST":
+      const augmentedBody = {
+        ...body,
+        createdDate: new Date().toISOString(), // Lägg till createdDate
+      };
+      const docRef = await addDoc(collection(db, url), augmentedBody);
+      return { data: { id: docRef.id, ...augmentedBody } };
 
-      default:
-        throw new Error(`Unhandled method ${method}`);
-    }
-  };
+    default:
+      throw new Error(`Unhandled method ${method}`);
+  }
+};
 
-  export const postsApi = createApi({
-    reducerPath: 'postsApi',
-    baseQuery: firebasePostsBaseQuery,
-    tagTypes: ['Post'],
-    endpoints: (builder) => ({
-      getPosts: builder.query({
-        query: () => ({
-          url: 'posts',
-          method: 'GET',
-          body: ''
-        }),
-        providesTags: ['Post'],
+export const postsApi = createApi({
+  reducerPath: "postsApi",
+  baseQuery: firebaseBaseQuery,
+  tagTypes: ["posts"],
+  endpoints: (builder) => ({
+    getPosts: builder.query({
+      query: () => ({
+        baseUrl: "",
+        url: "posts",
+        method: "GET",
       }),
-      createPost: builder.mutation({
-        query: (newPost) => ({
-          url: 'posts',
-          method: 'POST',
-          body: newPost
-        }),
-        invalidatesTags: ['Post'],
-      }),
-      // Define other endpoints like updatePost, deletePost as needed
+      providesTags: ["posts"],
     }),
-  });
+    createPost: builder.mutation({
+      query: ({ post }) => ({
+        baseUrl: "",
+        url: "posts",
+        method: "POST",
+        body: post,
+      }),
+      invalidatesTags: ["posts"],
+    }),
+    // Lägg till ytterligare mutations och queries efter behov
+  }),
+});
 
-  export const { useGetPostsQuery, useCreatePostMutation } = postsApi;
+export const { useGetPostsQuery, useCreatePostMutation } = postsApi;
