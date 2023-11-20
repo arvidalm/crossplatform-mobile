@@ -1,69 +1,107 @@
-    import { ListItem } from "@rneui/themed";
-    import React from "react";
-    import { useMemo } from "react";
-    import { View, Text, FlatList, RefreshControl, Button } from "react-native";
+import React, { useState, useMemo } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  RefreshControl,
+  Button,
+  StyleSheet,
+} from "react-native";
+import { useToast } from "react-native-toast-notifications";
 
-    import {
-    useGetUsersQuery,
-    useDeleteUserMutation,
-    } from "../../store/api/usersApi";
+import UserItem from "../../components/UserItem";
+import {
+  useGetUsersQuery,
+  useDeleteUserMutation,
+} from "../../store/api/usersApi";
 
-    const UserList = ({ navigation }) => {
-    const { data, isLoading, refetch } = useGetUsersQuery({});
-    const [deleteUser] = useDeleteUserMutation();
+const UserList = ({ navigation }) => {
+  const { data, isLoading, refetch } = useGetUsersQuery({});
+  const [deleteUser] = useDeleteUserMutation();
+  const [selectedUsers, setSelectedUsers] = useState({});
+  const toast = useToast();
 
-    const sortedData = useMemo(() => {
-        if (!data) return [];
-        return [...data].sort((a, b) => {
-        const firstNameCompare = a.firstName.localeCompare(b.firstName);
-        if (firstNameCompare !== 0) return firstNameCompare;
-        return a.lastName.localeCompare(b.lastName);
-        });
-    }, [data]);
+  const sortedData = useMemo(() => {
+    if (!data) return [];
+    return [...data].sort(
+      (a, b) =>
+        a.firstName.localeCompare(b.firstName) ||
+        a.lastName.localeCompare(b.lastName),
+    );
+  }, [data]);
 
-    const handleDelete = async (id) => {
-        await deleteUser(id);
-        refetch();
-    };
+  const handleSelectUser = (userId, isSelected) => {
+    setSelectedUsers((prev) => ({
+      ...prev,
+      [userId]: isSelected,
+    }));
+  };
 
-    const handleNavigateToUserInfo = (user) => {
-        navigation.navigate("UserInfo", { user });
-    };
+  const handleDelete = async (userId) => {
+    try {
+      await deleteUser(userId).unwrap();
+      refetch();
+      toast.show("User deleted successfully!", { type: "success" });
+    } catch (error) {
+      toast.show("Failed to delete user.", { type: "danger" });
+    }
+  };
 
-    return (
-        <View>
-        {isLoading ? (
-            <Text>Loading...</Text>
-        ) : (
-            <FlatList
+  const handleBulkDelete = async () => {
+    try {
+      const usersToDelete = Object.keys(selectedUsers).filter(
+        (userId) => selectedUsers[userId],
+      );
+      await Promise.all(
+        usersToDelete.map((userId) => deleteUser(userId).unwrap()),
+      );
+      setSelectedUsers({}); // Rensa urval efter radering
+      refetch();
+      toast.show("Users deleted successfully!", { type: "success" });
+    } catch (error) {
+      toast.show("Failed to delete users.", { type: "danger" });
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      {isLoading ? (
+        <Text>Loading...</Text>
+      ) : (
+        <>
+          <FlatList
             data={sortedData}
             refreshControl={
-                <RefreshControl refreshing={isLoading} onRefresh={refetch} />
+              <RefreshControl refreshing={isLoading} onRefresh={refetch} />
             }
             renderItem={({ item }) => (
-                <ListItem
-                bottomDivider
-                onPress={() => handleNavigateToUserInfo(item)}
-                >
-                <ListItem.Content>
-                    <ListItem.Title>{`${item.firstName} ${item.lastName}`}</ListItem.Title>
-                </ListItem.Content>
-                <Button
-                    title="Edit"
-                    onPress={() =>
-                    navigation.navigate("UserForm", {
-                        user: item,
-                    })
-                    }
-                />
-                <Button title="Delete" onPress={() => handleDelete(item.id)} />
-                </ListItem>
+              <UserItem
+                user={item}
+                isSelected={!!selectedUsers[item.id]}
+                onSelect={(isSelected) => handleSelectUser(item.id, isSelected)}
+                onEdit={() => navigation.navigate("UserForm", { user: item })}
+                onDelete={() => handleDelete(item.id)}
+                onNavigate={() =>
+                  navigation.navigate("UserInfo", { user: item })
+                }
+              />
             )}
             keyExtractor={(item) => item.id.toString()}
-            />
-        )}
-        </View>
-    );
-    };
+          />
+          {Object.values(selectedUsers).some((isSelected) => isSelected) && (
+            <Button title="Bulk Delete" onPress={handleBulkDelete} />
+          )}
+        </>
+      )}
+    </View>
+  );
+};
 
-    export default UserList;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  // Lägg till fler stilar om det behövs
+});
+
+export default UserList;

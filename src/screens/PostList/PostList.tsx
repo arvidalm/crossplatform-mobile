@@ -1,15 +1,16 @@
 import React from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
-import { useGetPostsQuery } from "../../store/api/postsApi";
+import { View, Text, FlatList, StyleSheet, Button } from "react-native";
 import { useSelector } from "react-redux";
+
+import {
+  useGetPostsQuery,
+  useDeletePostMutation,
+} from "../../store/api/postsApi";
 
 const PostList = () => {
   const loggedInAs = useSelector((state: any) => state.auth.loggedInAs);
-
-  // Använda en query parameter för att hämta alla inlägg
   const { data: allPosts, isLoading, isError } = useGetPostsQuery({});
-
-  console.log(allPosts);
+  const [deletePost] = useDeletePostMutation();
 
   if (isLoading) {
     return <Text>Loading posts...</Text>;
@@ -19,13 +20,15 @@ const PostList = () => {
     return <Text>Failed to load posts.</Text>;
   }
 
-  // Filtrera offentliga inlägg (private = false)
   const publicPosts = allPosts.filter((post) => !post.private);
-
-  // Filtrera privata inlägg (private = true) där createdBy är samma som loggedInAs
   const privatePosts = allPosts.filter(
-    (post) => post.private && post.createdBy === loggedInAs?.id
+    (post) => post.private && post.createdBy === loggedInAs?.id,
   );
+
+  const handleDelete = (postId) => {
+    console.log(`Deleting post with ID: ${postId}, Type: ${typeof postId}`);
+    deletePost(postId);
+  };
 
   const renderItem = ({ item }) => (
     <View style={styles.postContainer}>
@@ -33,6 +36,9 @@ const PostList = () => {
       <Text style={styles.postInfo}>
         Posted by: {item.createdBy} on {item.createdDate}
       </Text>
+      {loggedInAs?.id === item.createdBy && (
+        <Button title="Delete Post" onPress={() => handleDelete(item.id)} />
+      )}
     </View>
   );
 
